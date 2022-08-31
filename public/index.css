@@ -1,0 +1,21 @@
+#root{
+    max-width: 1000px;
+    width: 100%;
+    margin: auto 0px;
+    padding: 0px 1rem;
+}
+body{
+    font-family: 'Montserrat', sans-serif;
+    display: flex;
+    -moz-box-pack: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-clip: border-box, border-box;
+    background-size: auto;
+    margin: 0 0;
+    padding: 0 0;
+    background-color: rgb(3, 16, 39);
+}
+html{
+    font-size: 16px;
+}
