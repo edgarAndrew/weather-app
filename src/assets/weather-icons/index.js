@@ -15,5 +15,7 @@ const IMAGES = {
     storm : require('./storm.png'),
     sun : require('./sun.png'),
     tornado : require('./tornado.png'),
+    moon:require('./moon.png'),
+    rain_cloud_night:require('./rain_cloud_night.png')
   }
   export default IMAGES;

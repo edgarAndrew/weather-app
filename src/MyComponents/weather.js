@@ -7,12 +7,14 @@ export const Weather = () => {
     
     // Hooks
     const [searchPlace,setSearchPlace] = useState("bangalore");
+    const [isSearchBarFocused, setIsSearchBarFocused] = useState(false);
+    const [locations, setLocations] = useState(null);
     const [info,setInfo] = useState({});
 
     // Function to make a call to OpenWeather Api
     const getWeatherInfo = async() =>{
         try{
-            let url = `https://api.openweathermap.org/data/2.5/weather?q=${searchPlace}&appid=${process.env.REACT_APP_API_KEY}&units=metric`;
+            let url = `https://api.openweathermap.org/data/2.5/weather?q=${searchPlace}&appid=${process.env.REACT_APP_API_KEY_1}&units=metric`;
             const res = await fetch(url);
             const data = await res.json();
             if(data.cod === 200){
@@ -34,7 +36,10 @@ export const Weather = () => {
                 }
                 else if(id>=500 && id<= 531){
                     if(id === 500)
-                        weather_condition = "light_rain" ;
+                        if (data.weather[0].icon == '10n')
+                            weather_condition = "rain_cloud_night"
+                        else
+                            weather_condition = "rain_cloud" ;
                     else if (id === 501)
                         weather_condition = "rain" ;
                     else
@@ -59,7 +64,10 @@ export const Weather = () => {
                         weather_condition = "fog";
                 }
                 else if(id === 800)
-                    weather_condition = "sun";
+                    if (data.weather[0].icon == '01n')
+                        weather_condition = "moon"
+                    else
+                        weather_condition = "sun";
                 else if(id >= 801 && id<=804){
                     if(id === 801 || id === 802)
                         weather_condition = "cloudy_day";
@@ -92,21 +100,60 @@ export const Weather = () => {
             console.log(err);
         }
     }
+    const getLocations = async(place) =>{
+        const res = await fetch(`https://api.geoapify.com/v1/geocode/autocomplete?text=${place}&apiKey=${process.env.REACT_APP_API_KEY_2}`)
+        const data = await res.json()
+        setLocations(data.features)
+    }
     useEffect(()=>{ 
         getWeatherInfo();
     },[]);
 
-  return (
+    useEffect(()=>{
+        getLocations(searchPlace)
+    },[searchPlace])
+
+    const handleSearchBarFocus = () => {
+        setIsSearchBarFocused(true);
+        };
+
+    const handleLocationItemClick = (location) => {
+        setSearchPlace(location.properties.name ? location.properties.name : location.properties.city)
+        setIsSearchBarFocused(false);
+        getWeatherInfo()
+    };
+  
+    return (
     <>
         <div className='search'>
-            <button className='btn' onClick={getWeatherInfo}>
-                <img src={ico1} className="search-icon" alt="search"/>
-            </button>
-            <input className='searchBox' type="text" placeholder="Search for location" name="location" id="" 
-                value={searchPlace} onChange={(e)=> setSearchPlace(e.target.value)} onKeyDown={(e)=>{
-                    if(e.key === 'Enter')
-                        getWeatherInfo();
-                }}/>
+            <div>
+                <input className='searchBox' type="text" placeholder="Search for location" name="location" id="place" 
+                    value={searchPlace} onChange={(e)=> setSearchPlace(e.target.value)} onKeyDown={(e)=>{
+                        if(e.key === 'Enter')
+                            getWeatherInfo();
+                    }}
+                    onFocus={handleSearchBarFocus}
+                />
+                <button className='btn' onClick={getWeatherInfo}>
+                    <img src={ico1} className="search-icon" alt="search"/>
+                </button>
+            </div>
+             {isSearchBarFocused && (
+                <ul className="location-list">
+                    {locations && locations.map((location,index) => (
+                        location.properties.name || location.properties.city ?
+                            <li key={index} className="location-item" onClick={(event) => handleLocationItemClick(location)}>
+                                <div >
+                                    {location.properties.name ? location.properties.name : location.properties.city},
+                                    {location.properties.state},
+                                    {location.properties.country}
+                                </div>
+                            </li>
+                        :null
+                        ))
+                    }
+                </ul>
+            )}
         </div>
         <WeatherCard info={info}/>
     </>
